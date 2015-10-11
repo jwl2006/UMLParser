@@ -53,12 +53,16 @@ public class Field_Object {
 				if (collectionCheck(type.get(i))||arrayCheck(type.get(i)))
 				{
 					ret+="*";
+					ret+="[";
 					ret+=collectionParse(type.get(i));
+					ret+="]";
 				}
 				else
 				{
 					ret+="1";
+					ret+="[";
 					ret+=type.get(i);
+					ret+="]";
 				}
 				nonprimitiveUML.add(ret);
 			}

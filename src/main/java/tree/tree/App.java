@@ -131,8 +131,34 @@ public class App
 	        buildPrimitiveUML(nonprimitiveUML,primitiveUML,nonprimitiveList,classNameList);
 	        String prime = buildprimitiveParameter(class_name,primitiveUML);
 	        System.out.println(prime);
+	        ArrayList<String> finalresult=new ArrayList<String>();boolean sign = false;
+	        for (int i=0;i<classNameList.size();i++)
+	        {
+	        	String ret="";
 	        	
-	        	
+	        	String appendString = classNameList.get(i);
+	        	if (appendString!=class_name && sign==false)
+	        	{
+	        		String temp =findAlienPrimitive(nonprimitiveUML,appendString);
+	        		ret+=prime+temp;
+	        		finalresult.add(ret);
+	        		sign=true;
+	        		continue;
+	        	}
+	        	if (appendString!=class_name && sign==true)
+	        	{
+	        		String temp =findAlienPrimitive(nonprimitiveUML,appendString);
+	        		ret+="[";
+	        		ret+=class_name;
+	        		ret+="]";
+	        		ret+=temp;
+	        		finalresult.add(ret);
+	        	}
+	        }
+	        	for (String a: finalresult)
+	        	{
+	        		System.out.println(a);
+	        	}
 	        	
 	        		
 }
