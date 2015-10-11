@@ -99,7 +99,7 @@ public class Field_Object {
 		if (isPrimitive(tp))
 			primitiveList.add(tp);
 		else
-			nonprimitiveList.add(tp);
+			nonprimitiveList.add(collectionParse(tp));
 	}
 	public void setModifier(Integer target)
 	{

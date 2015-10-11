@@ -43,25 +43,76 @@ public class App
 		            in.close();}
 		        }		
 		}
+	 public static String trimFileName(String filename)
+	 {
+		 String ret =filename.replace(".java", "");
+		 return ret;
+	 }
 
+	 public static String findAlienPrimitive(ArrayList<String> nonpriUML,String alien)
+	 {
+		 for (String nonpri:nonpriUML)
+		 {
+			 if (nonpri.contains(alien))
+				 return nonpri;
+		 }
+		return null; 
+	 }
+	 public static void buildPrimitiveUML(ArrayList<String> nonprimitiveUML,
+			 							  ArrayList<String> primitiveUML,
+			 							 ArrayList<String> nonprimitiveList,
+			 							 ArrayList<String> classNameList
+			 							  )
+	{
+		    for (int i=0;i<nonprimitiveList.size();++i)
+	        {   
+	        	String temp;
+	        	if (classNameList.contains(nonprimitiveList.get(i))==false)
+	        	{
+	        		temp= findAlienPrimitive(nonprimitiveUML,nonprimitiveList.get(i));
+	        		primitiveUML.add(temp);
+	        	}
+	        }	 							  
+	}
+	 public static String buildprimitiveParameter(String class_name,
+			                                      ArrayList<String> primitiveUML)	 													
+	 {
+		        String ret ="";
+        		ret+="[";
+        		ret+=class_name;
+        		ret+="|";
+        		for (int j=0;j<primitiveUML.size()-1;j++)
+        		{
+        			ret+=primitiveUML.get(j);
+        			ret+=";";
+        		}
+        		ret+=primitiveUML.get(primitiveUML.size()-1);
+        		ret+="]";
+        		return ret;
+     }
+		 
+		 
+		 
+	 
 	
 	    public static void main(String[] args) throws Exception {
 	       
 	    	ArrayList<File> validlist=new ArrayList<File>();
-	        validlist = fileScreen("/Users/wanghao/Downloads/uml-parser-test-2");
+	        validlist = fileScreen("/Users/wanghao/Downloads/uml-parser-test-1");
 	        ArrayList<String> classNameList = new ArrayList<String>();
 	        ArrayList<String> interfaceList = new ArrayList<String>();
 	        ArrayList<String> extendsList = new ArrayList<String>();
 	        ArrayList<String> implementList = new ArrayList<String>();
 	        readIn(validlist,classNameList,interfaceList,extendsList,implementList);
-	        
-	        FileInputStream in = new FileInputStream("A.java");
+	        String file ="A.java";
+	        FileInputStream in = new FileInputStream(file);
 	        CompilationUnit cu;
-	        
+	        String class_name = trimFileName(file);
 //	    	ArrayList<String> name = new ArrayList<String>();
 //	    	 ArrayList<String> type = new ArrayList<String>();
 //	   	 ArrayList<String> modifier = new ArrayList<String>();
-	   	ArrayList<String> primitiveList = new ArrayList<String>();
+	   	ArrayList<String> primitiveUML = new ArrayList<String>();
+	    	ArrayList<String> nonprimitiveUML = new ArrayList<String>();
 	    	ArrayList<String> nonprimitiveList = new ArrayList<String>();
 	        try {
 	            // parse the file
@@ -71,24 +122,23 @@ public class App
 //	            name = ret.getName();
 //	            type = ret.getType();
 //	            modifier = ret.getModifier();
-	            primitiveList = ret.getprimitiveUML();
-	            nonprimitiveList = ret.getnonprimitiveUML();
+	            primitiveUML = ret.getprimitiveUML();
+	            nonprimitiveUML = ret.getnonprimitiveUML();
+	            nonprimitiveList = ret.getNonprimitive();
 	           
 	        } finally {
 	            in.close();}
-	        
-	        for (String a:primitiveList)
-	        {
-	        	System.out.println(a);
-	        }
-	        for (String b:nonprimitiveList)
-	        {
-	        	System.out.println(b);
-	        }
-			
+	        buildPrimitiveUML(nonprimitiveUML,primitiveUML,nonprimitiveList,classNameList);
+	        String prime = buildprimitiveParameter(class_name,primitiveUML);
+	        System.out.println(prime);
+	        	
+	        	
+	        	
+	        		
+}
 	  
 	
-	    }
+	    
 	    
 	public static boolean accept(File ff) {//重写accept方法
 	     if(ff.getName().endsWith(".java")){//name以.java结尾的为符合条件，将被筛出
