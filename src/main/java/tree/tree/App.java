@@ -15,49 +15,79 @@ import com.github.javaparser.ast.CompilationUnit;
 
 public class App 
 {
+	 public static void readIn(ArrayList<File> validlist, ArrayList<String> classNameList,
+				ArrayList<String> interfaceList,ArrayList<String> extendsList,
+				ArrayList<String> implementList)throws Exception 
+		{
+			 for (File singleFile:validlist)
+		        {
+		        // creates an input stream for the file to be parsed
+		        FileInputStream in = new FileInputStream(singleFile.toString());
+		         
+		   //     ArrayList<Object> finallist = new ArrayList<Object>();
+		        CompilationUnit cu;
+		        try {
+		            // parse the file
+		            cu = JavaParser.parse(in);
+		            Class_Object ret = new Class_Object();
+		            new ClassVisitor().visit(cu,ret);
+		            if (ret.getName()!=null)
+		                classNameList.add(ret.getName());
+		            if (ret.getInterface()!=null)
+		            	interfaceList.add(ret.getInterface());
+		            if (ret.getExtends()!=null)
+		            	extendsList.add(ret.getExtends());
+		            if (ret.getImplements()!=null)
+		            	implementList.add(ret.getImplements());
+		        } finally {
+		            in.close();}
+		        }		
+		}
+
+	
 	    public static void main(String[] args) throws Exception {
-	        ArrayList<File> validlist=new ArrayList<File>();
+	       
+	    	ArrayList<File> validlist=new ArrayList<File>();
 	        validlist = fileScreen("/Users/wanghao/Downloads/uml-parser-test-2");
-	        ArrayList<Class_Resource> resources = new ArrayList<Class_Resource>();
-	    for (File singleFile:validlist)
-	        {
-	        // creates an input stream for the file to be parsed
-	        FileInputStream in = new FileInputStream(singleFile.toString());
-	         Field_Object field = new Field_Object();
-	         Method_Object method= new Method_Object();
-	         Class_Object classchar = new Class_Object();
-	         Class_Resource singleResource = new Class_Resource();
-	   //     ArrayList<Object> finallist = new ArrayList<Object>();
+	        ArrayList<String> classNameList = new ArrayList<String>();
+	        ArrayList<String> interfaceList = new ArrayList<String>();
+	        ArrayList<String> extendsList = new ArrayList<String>();
+	        ArrayList<String> implementList = new ArrayList<String>();
+	        readIn(validlist,classNameList,interfaceList,extendsList,implementList);
+	        
+	        FileInputStream in = new FileInputStream("A.java");
 	        CompilationUnit cu;
+	        
+//	    	ArrayList<String> name = new ArrayList<String>();
+//	    	 ArrayList<String> type = new ArrayList<String>();
+//	   	 ArrayList<String> modifier = new ArrayList<String>();
+	   	ArrayList<String> primitiveList = new ArrayList<String>();
+	    	ArrayList<String> nonprimitiveList = new ArrayList<String>();
 	        try {
 	            // parse the file
 	            cu = JavaParser.parse(in);
-	            new MethodVisitor().visit(cu, method);
-	            new FieldVisitor().visit(cu, field);
-	            new ClassVisitor().visit(cu, classchar);
-	            singleResource.setClassObj(classchar);
-	            singleResource.setMethodObj(method);
-	            singleResource.setFieldObj(field);
-	            resources.add(singleResource);
+	            Field_Object ret = new Field_Object();
+	            new FieldVisitor().visit(cu,ret);
+//	            name = ret.getName();
+//	            type = ret.getType();
+//	            modifier = ret.getModifier();
+	            primitiveList = ret.getprimitiveUML();
+	            nonprimitiveList = ret.getnonprimitiveUML();
+	           
 	        } finally {
 	            in.close();}
-	        }
-	
 	        
-	  //     ArrayList<ArrayList<String>> finalList = ret.parseToken();
-	  //     ret.print_fieldObj(finalList);
-	   //    ArrayList<String> typeList = ret.getType();
-	    //   for(String list:typeList)
-	     //  {
-	   // 	   String temp=ret.collectionParse(list);
-	    //	   System.out.println(temp);
-	     //  }
-	       
-	       
-	       
-	       
-	        // prints the resulting compilation unit to default system output
-	       // System.out.println(cu.toString());
+	        for (String a:primitiveList)
+	        {
+	        	System.out.println(a);
+	        }
+	        for (String b:nonprimitiveList)
+	        {
+	        	System.out.println(b);
+	        }
+			
+	  
+	
 	    }
 	    
 	public static boolean accept(File ff) {//重写accept方法

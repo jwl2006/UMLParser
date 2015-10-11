@@ -9,8 +9,63 @@ public class Field_Object {
 	private ArrayList<String> name = new ArrayList<String>();
 	private ArrayList<String> type = new ArrayList<String>();
 	private ArrayList<String> modifier = new ArrayList<String>();
+	private ArrayList<String> primitiveList = new ArrayList<String>();
+	private ArrayList<String> nonprimitiveList = new ArrayList<String>();
+	private String[] primitive = {"byte", "short", "int", "long", "float", "double", "char",
+			"boolean", "String"};
+	private ArrayList<String> primitiveUML = new ArrayList<String>();
+	private ArrayList<String> nonprimitiveUML = new ArrayList<String>();
+	public boolean isPrimitive(String typename)
+	{
+		for (String prim:primitive)
+		{
+			if (typename.contains(prim))
+				return true;
+		}
+		return false;
+	}
 	
-	
+	public ArrayList<String> getprimitiveUML()
+	{
+		for (int i=0;i<name.size();i++)
+		{
+			String ret = "";
+			if (isPrimitive(type.get(i)))
+			{
+				ret+=modifier.get(i);
+				ret+=name.get(i);
+				ret+=":";
+				ret+=type.get(i);
+			primitiveUML.add(ret);
+			}
+		}
+		return primitiveUML;
+	}
+		
+	public ArrayList<String> getnonprimitiveUML()
+	{
+		for (int i=0;i<name.size();i++)
+		{
+			String ret = "";
+			if (isPrimitive(type.get(i))==false)
+			{
+				ret+=modifier.get(i);
+				if (collectionCheck(type.get(i))||arrayCheck(type.get(i)))
+				{
+					ret+="*";
+					ret+=collectionParse(type.get(i));
+				}
+				else
+				{
+					ret+="1";
+					ret+=type.get(i);
+				}
+				nonprimitiveUML.add(ret);
+			}
+		}
+		return nonprimitiveUML;
+	}
+
 	public ArrayList<String> getName()
 	{
 		return name;
@@ -19,6 +74,16 @@ public class Field_Object {
 	{
 		return type;
 	}
+	
+	public ArrayList<String> getPrimitiveList()
+	{
+		return primitiveList;
+	}
+	public ArrayList<String> getNonprimitive()
+	{
+		return nonprimitiveList;
+	}
+	
 	public ArrayList<String> getModifier()
 	{
 		return modifier;
@@ -29,12 +94,18 @@ public class Field_Object {
 	}
 	public void setType(String target)
 	{
-		type.add(target);	
+		String tp = arrayReplace(target);
+		type.add(tp);	
+		if (isPrimitive(tp))
+			primitiveList.add(tp);
+		else
+			nonprimitiveList.add(tp);
 	}
 	public void setModifier(Integer target)
 	{
+		String m =Integer.toString(target);
 		
-		modifier.add(Integer.toString(target));	
+		modifier.add(accessReplace(m));	
 	}
 	
 	public String nameReplace(String target)
