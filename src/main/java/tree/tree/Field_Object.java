@@ -33,7 +33,7 @@ public class Field_Object {
 			if (isPrimitive(type.get(i)))
 			{
 				ret+=modifier.get(i);
-				ret+=name.get(i);
+				ret+=nameReplace(name.get(i));
 				ret+=":";
 				ret+=type.get(i);
 			primitiveUML.add(ret);
