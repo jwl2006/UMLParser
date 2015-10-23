@@ -1,4 +1,5 @@
 package tree.tree;
+import java.util.ArrayList;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
@@ -11,16 +12,24 @@ public class MethodVisitor extends VoidVisitorAdapter<Method_Object> {
         // this method will be called for all methods in this 
         // CompilationUnit, including inner class methods
    
-    	if (n.getModifiers()==1)
-    	{
+    	
+   
     	    ret.setName(n.getName());
-        
-    	    ret.setParameters(n.getParameters().toString());
+    	    String param = n.getParameters().toString();
+    	//    System.out.println(param);
+    	   
+    
+    	    ret.setParameters(param.toString());
        
     	    ret.setType(n.getType().toString());
 
     	    ret.setModifier(n.getModifiers());
-    	}
+    	
     }
 }
+    
+
+    
+    
+ 
 

@@ -10,11 +10,11 @@ public class ClassVisitor extends VoidVisitorAdapter<Class_Object> {
 	        // here you can access the attributes of the method.
 	        // this method will be called for all methods in this 
 	        // CompilationUnit, including inner class methods
-	    		if (n.getName()!=null && n.isInterface()==false&&n.getExtends()==null&&n.getImplements()==null)
+	    		if (n.getName()!=null && n.isInterface()==false)
 	    		{
-	    			String ret = "[";
+	    			String ret="";
 	    			ret+=n.getName();
-	    			ret+="]";
+	    			
 	    			obj.setName(ret);
 	    		}
 	    	   if(n.getExtends()!=null)

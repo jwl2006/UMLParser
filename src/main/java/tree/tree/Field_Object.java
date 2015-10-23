@@ -50,6 +50,8 @@ public class Field_Object {
 			if (isPrimitive(type.get(i))==false)
 			{
 				ret+=modifier.get(i);
+			//	ret+=nameReplace(name.get(i));
+			//	ret+=":";
 				if (collectionCheck(type.get(i))||arrayCheck(type.get(i)))
 				{
 					ret+="*";

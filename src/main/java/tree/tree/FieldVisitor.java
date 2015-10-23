@@ -15,8 +15,8 @@ public class FieldVisitor extends VoidVisitorAdapter<Field_Object> {
         // here you can access the attributes of the method.
         // this method will be called for all methods in this 
         // CompilationUnit, including inner class methods
-    	
-    	
+    	 
+    		
     	    ret.setName(n.getVariables().toString());
     	    ret.setType(n.getType().toString());
             ret.setModifier(n.getModifiers());
