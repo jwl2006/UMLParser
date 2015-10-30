@@ -22,7 +22,7 @@ public class ClassVisitor extends VoidVisitorAdapter<Class_Object> {
 	    	   if(n.getImplements()!=null)
 	    		   obj.setImplements(n.getName()+":"+n.getImplements().toString());
 	    	   if (n.isInterface()){
-	    		   String ret ="[<<interface>>;";
+	    		   String ret ="[\\<\\<interface\\>\\>;";
 	    		   ret=ret+n.getName()+"]";
 	    		   obj.setInterface(ret);}
 	    	   

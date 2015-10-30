@@ -9,7 +9,7 @@ public class Constructor_Object {
 	private String constructorUML="";
 	private String[] primitive = {"byte", "short", "int", "long", "float", "double", "char",
 			"boolean", "String"};
-	private ArrayList<String> constructornonprimitiveList = new ArrayList<String>();
+
 	
 	public String getconstructorUML()
 	{

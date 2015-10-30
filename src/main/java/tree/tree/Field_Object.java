@@ -32,11 +32,14 @@ public class Field_Object {
 			String ret = "";
 			if (isPrimitive(type.get(i)))
 			{
+				if (modifier.get(i).equals("+")||modifier.get(i).equals("-"))
+				{
 				ret+=modifier.get(i);
 				ret+=nameReplace(name.get(i));
 				ret+=":";
 				ret+=type.get(i);
-			primitiveUML.add(ret);
+				primitiveUML.add(ret);
+				}
 			}
 		}
 		return primitiveUML;
@@ -47,7 +50,7 @@ public class Field_Object {
 		for (int i=0;i<name.size();i++)
 		{
 			String ret = "";
-			if (isPrimitive(type.get(i))==false)
+			if (isPrimitive(type.get(i))==false && (modifier.get(i).equals("+")||modifier.get(i).equals("-")))
 			{
 				ret+=modifier.get(i);
 			//	ret+=nameReplace(name.get(i));

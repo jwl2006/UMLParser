@@ -19,7 +19,8 @@ public class FieldVisitor extends VoidVisitorAdapter<Field_Object> {
     		
     	    ret.setName(n.getVariables().toString());
     	    ret.setType(n.getType().toString());
-            ret.setModifier(n.getModifiers());
+    //	    if (n.getModifiers()=="1"||n.getModifiers()==2)
+                ret.setModifier(n.getModifiers());
         }
        
     }

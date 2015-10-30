@@ -2,6 +2,7 @@ package tree.tree;
 
 
 import java.io.*;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,58 +23,199 @@ public class App
 	    ArrayList<File> validlist=new ArrayList<File>();
 	    ArrayList<String> allRelations = new ArrayList<String>();
 	    ArrayList<String> relationList = new ArrayList<String>();
-	    //Read the classname, extends, interface in the directory
-	    validlist = fileScreen("/Users/wanghao/Downloads/uml-parser-test-5");
+	    ArrayList<String> allCompartmentList =new ArrayList<String>();
+
+	    String directory =args[0];
+
+	    System.out.println(directory);
+	    validlist = fileScreen(directory);
 	    App app = new App();
 	    app.readIn(validlist,classNameList,interfaceList,extendsList,implementList);
- 
+	    ArrayList<ClassRelations> allResources = new ArrayList<ClassRelations>();
 	    //for each file, get the relations
+
+	
 	    for (File validfile:validlist)
 	    {
 	    String file=validfile.toString(); 
 
+	    String class_name = app.parseGetClassName(file,directory);
+
+	    ClassRelations relationClass = new ClassRelations();
 		ArrayList<String> fieldprimitiveUML = new ArrayList<String>();
 		ArrayList<String> fieldnonprimitiveUML = new ArrayList<String>();
 		ArrayList<String> fieldnonprimitiveList = new ArrayList<String>();
 		ArrayList<String> methodUML = new ArrayList<String>();
 		ArrayList<String> methodNonPrimitiveList = new ArrayList<String>();
 		ArrayList<String> constructorNonPrimitiveList = new ArrayList<String>();
-		String allCompartment=""; String class_name=""; String constructorUML="";
+		ArrayList<String> methodBodydependency = new ArrayList<String>();
+		String allCompartment="";  String constructorUML="";
 		
-		
+		app.MethodReadin(classNameList, file, methodUML, methodNonPrimitiveList,methodBodydependency);
 	    app.fieldReadin(classNameList,file,fieldprimitiveUML,fieldnonprimitiveUML,fieldnonprimitiveList);
-		class_name = app.MethodReadin(classNameList, file, methodUML, methodNonPrimitiveList);
+		ArrayList<String> targetList = app.getSgetter_target(methodUML, fieldprimitiveUML);
+		methodUML =app.screenmethodUML(targetList,methodUML) ;
+		fieldprimitiveUML =app.screenfieldprimitiveUML(targetList,fieldprimitiveUML);
+	       
 		constructorUML += app.constructorReadin(file,constructorNonPrimitiveList);
-		allCompartment = app.buildAllCompartment(class_name,fieldprimitiveUML,methodUML,constructorUML);
+		allCompartment = app.buildAllCompartment(class_name,fieldprimitiveUML,methodUML,constructorUML,classNameList,interfaceList);
+		allCompartmentList.add(allCompartment);
+		
 
-		ArrayList<String> extendFound = app.buildExtendsRelation(extendsList,class_name, allCompartment);
-		ArrayList<String> implementFound = app.buildImplementRelation(implementList,class_name,interfaceList,allCompartment);
+		relationClass.setallCompartment(allCompartment);
+		relationClass.setclass_name(class_name);
+		relationClass.setconstructorNonPrimitiveList(constructorNonPrimitiveList);
+		relationClass.setfieldnonprimitiveList(fieldnonprimitiveList);
+		relationClass.setfieldnonprimitiveUML(fieldnonprimitiveUML);
+		relationClass.setfieldprimitiveUML(fieldprimitiveUML);
+		relationClass.setmethodNonPrimitiveList(methodNonPrimitiveList);
+		relationClass.setmethodUML(methodUML);
+		relationClass.setconstructorUML(constructorUML);
+		
+		
+		allResources.add(relationClass);	
+		
 		ArrayList<String> associationFound = app.buildAssociation(fieldnonprimitiveUML, allCompartment,class_name,relationList);
 		ArrayList<String> allNonprimitiveForDependency= app.combineNonprimitives(constructorNonPrimitiveList, methodNonPrimitiveList);
-		ArrayList<String> dependencyFound = app.buildDependency(allCompartment, interfaceList, allNonprimitiveForDependency);
-		
-		allRelations.addAll(extendFound);
-		allRelations.addAll(implementFound);
+		ArrayList<String> dependencyFound = app.buildDependency(allCompartment, interfaceList, allNonprimitiveForDependency, methodBodydependency);
+
 		allRelations.addAll(associationFound);
 		allRelations.addAll(dependencyFound);
 	    }    
-		System.out.println(allRelations);
-		String all ="";
-         for (int i=0;i<allRelations.size()-1;i++)
-         {
-        	 all+=allRelations.get(i);
-        	 all+=",";
-         }
-         all+=allRelations.get(allRelations.size()-1);
-         String destinationFile = "output.jpg";
-         getoutImage(all,destinationFile);
-         
-              
+		
+	    ArrayList<String> implementFound = app.buildImplementRelation(implementList,allResources);
+	    ArrayList<String> extendFound = app.buildExtendsRelation(extendsList,allResources);
+	    allRelations.addAll(implementFound);
+	    allRelations.addAll(extendFound);
+	    System.out.println(allRelations);
+	    
+	    	   
+         String destinationFile = args[1];
+         getoutImage(allRelations,destinationFile);
 	}
-	public static void getoutImage(String allRelations,String destinationFile)throws Exception
+	
+	public ArrayList<String> getSgetter_target(ArrayList<String> methodUML, ArrayList<String> fieldprimitiveUML)
 	{
+		ArrayList<String> targetlist = new ArrayList<String>();
+	   	ArrayList<String> trimmedMethod = trimSgetters(methodUML);
+	    ArrayList<String> trimmedPrimitive = trimSgetters(fieldprimitiveUML);
+	      
+	       	for (String primi: trimmedPrimitive)
+	       	{
+	       		String target = isSgetters(primi,trimmedMethod);
+
+	       	 	targetlist.add(target);
+	       	}
+	  	return targetlist;
+	}
+	
+	
+	public String trimword_Sgetter (String field)
+	{
+		String []temp = field.split(":");
+		String mid =temp[0].replace("-", "");
+		mid =mid.replace("+", "");
+		mid = mid.replaceAll("\\(.*", "");
+		mid = mid.toLowerCase();
+		return mid;
+	}
+	
+	public ArrayList<String> trimSgetters(ArrayList<String> methodUML)
+	{
+		ArrayList<String> result = new ArrayList<String> ();
+		for (String field:methodUML)
+		{
+			String mid = trimword_Sgetter(field);
+			result.add(mid);
+		}
+		return result;
+	}
+	
+
+	
+	public String isSgetters (String target, ArrayList<String> method)
+	{ 
+		if (method.contains("set"+target) && method.contains("get"+target))
+		{
+			return target;
+			
+		}
+		return null;
+	}
+
+	public ArrayList<String> screenfieldprimitiveUML (ArrayList<String> target, ArrayList<String> fieldprimitiveUML)
+	{
+		ArrayList<String> result = new ArrayList<String>();
+		for (String primi:fieldprimitiveUML)
+		{
+			String temp = trimword_Sgetter(primi);
+			if (target.contains(temp)==true)
+			{
+				primi = primi.replace("-", "");
+				primi = primi.replace("+", "");
+				primi = "+"+primi;
+				result.add(primi);
+			}
+			else
+				result.add(primi);
+		}
+		return result;
+	}
+	
+	
+	public ArrayList<String> screenmethodUML (ArrayList<String> targetList, ArrayList<String> methodUML)
+	{
+		ArrayList<String> result = new ArrayList<String>();
+		for (String primi:methodUML)
+		{
+			String temp = trimword_Sgetter(primi);
+			for (String target:targetList)
+			{				
+				if (("set"+target).equals(temp) || ("get"+target).equals(temp))
+					primi = "";
+			}
+			result.add(primi);
+		}
+		result.removeAll(Arrays.asList(null,""));		
+		return result;
+	}
+	
+	
+	public String findTarget (String query,ArrayList<String> fieldprimitiveUML)
+	{
+		for (String candidate:fieldprimitiveUML)
+		{
+			candidate = candidate.toLowerCase();
+			if (candidate.contains(query))
+				return candidate;
+		}
+		return null;
+	}
+	
+	
+	public String parseGetClassName(String filename,String directory)
+	{
+		String ret = filename.replace(directory, "");
+		ret = ret.replace("/", "");
+		ret = ret.replace(".java","");
+		return ret;
+	}
+	
+	
+	
+	
+	public static void getoutImage(ArrayList<String> allRelations,String destinationFile)throws Exception
+	{
+		String all ="";
+        for (int i=0;i<allRelations.size()-1;i++)
+        {
+       	 all+=allRelations.get(i);
+       	 all+=",";
+        }
+        if (allRelations.size()>0)
+            all+=allRelations.get(allRelations.size()-1);
 		String baseUrl ="http://yuml.me/diagram/nofunky/class/";
-		String imageUrl = baseUrl+allRelations;
+		String imageUrl = baseUrl+all;
 		saveImage(imageUrl, destinationFile);	
 	}
 	
@@ -118,9 +260,22 @@ public class App
 			return false;	
 		}
 	
+		public ArrayList<String> findmethodBodyList(ArrayList<String>methodBodydependency,ArrayList<String> interfaceList)
+		{
+			 ArrayList<String> result = new ArrayList<String>();
+			for (String candi:methodBodydependency)
+			{
+				String ret = findDependency(interfaceList,candi);
+				if (ret!=null)
+					result.add(ret);
+			}		
+			return result;	
+		}
+		
 		public ArrayList<String>buildDependency(String allCompartment, ArrayList<String> interfaceList,
-			                   ArrayList<String>methodNonPrimitveList)
+			                   ArrayList<String>methodNonPrimitveList,ArrayList<String>methodBodydependency)
 	    {
+			
 			ArrayList<String> result = new ArrayList<String>();
 			for(String nonprimitive:methodNonPrimitveList)
 			{
@@ -190,64 +345,72 @@ public class App
 			ret = ret.replace("]", "");
 			return ret;
 		}
-	
-		public ArrayList<String> buildImplementRelation(ArrayList<String>implementList,String class_name,
-												ArrayList<String> interfaceList, String allCompartment)
+		
+		public String findInallResources(ArrayList<ClassRelations> allResources, String class_name)
+		{
+			String ret ="";
+			for(ClassRelations relation:allResources)
+			{
+				if (class_name.equals(relation.getclass_name()))
+					 ret=relation.getallCompartment();
+			}
+			return ret;	
+		}
+		
+		public ArrayList<String> parseImplementList(ArrayList<String>implementList)
 		{
 			ArrayList<String> result = new ArrayList<String>();
-			ArrayList<String> implementFound = findImplements(implementList,class_name);
-			ArrayList<String> trimedImplement = parseImplementFound(implementFound,class_name);
-		
-			for (String temp: trimedImplement)
+			for (String imple:implementList)
 			{
-				String ret = findInterface(interfaceList, temp);
-				ret+="^-.-";
-				ret+=allCompartment;
+				String ret="";
+				String[] temp = imple.split(":");
+				ArrayList<String> parsed = parseImplementHelper(temp[1]);
+				for (String pr:parsed)
+				{
+					ret = temp[0]+":"+pr;
+					result.add(ret);
+				}
+			}		
+			return result;	
+		}
+	
+		public ArrayList<String> parseImplementHelper(String temp1)
+		{
+			ArrayList<String> result = new ArrayList<String>();
+			String[] ret = temp1.split(",");
+			
+			for (int i=0;i<ret.length;i++)
+			{
+				
+				String candidate =trimBracket(ret[i].trim());
+				String c1="["+candidate+"]";
+				result.add(c1);
+			}
+			return result;		
+		}
+		
+		public ArrayList<String> buildImplementRelation(ArrayList<String>implementList,
+												ArrayList<ClassRelations> allResources)
+		{
+			ArrayList<String> result = new ArrayList<String>();
+			String child=""; String parent="";String ret=";";
+			implementList = parseImplementList(implementList);
+		
+			for (String implement:implementList)
+			{
+				String[] temp = implement.split(":");
+				child=temp[0];
+				parent=trimBracket(temp[1]);
+				child  = findInallResources(allResources,child);
+				parent = findInallResources(allResources,parent);
+				ret=parent+"^-.-"+child;
 				result.add(ret);
 			}
 			return result;
 		}	 
 		
-		public ArrayList<String> parseImplementFound(ArrayList<String> implementFound,String class_name)
-		{
-			ArrayList<String> result = new ArrayList<String>();
-			for (String imple:implementFound)
-			{
-				String[] ret = imple.split(",");//B2:[A1, A2]
-				for (int i=0;i<ret.length;i++)
-				{
-					String temp =ret[i].trim();
-					temp = temp.replace(class_name, "");
-					temp = temp.replace(":", "");
-					temp = temp.replace("[", "");
-					temp = temp.replace("]", "");
-					String build = class_name;
-					build+=":["+temp+"]";
-					result.add(build);		
-				}
-			}
-			return result;
-		}
-		
-		public String findInterface(ArrayList<String> interfaceList,String query)
-		{
-			String[] splited = query.split(":");
-			String target ="";
-			if (splited.length>0)
-			{
-				target = trimBracket(splited[1]);
-			}
-			for (String itf:interfaceList)
-			{
-				String[] temp = itf.split(";");
-				String middle = temp[1].replace("]","");
-				if (temp.length>0 && middle.equals(target))
-				{
-					return itf;
-				}
-			}
-			return null;
-		}
+
+
 	
 		public String trimBracket(String queryRet)
 		{
@@ -257,37 +420,26 @@ public class App
 		}
 	
 	
-		public ArrayList<String> findImplements(ArrayList<String>implementList, String class_name)
-		{
-			ArrayList<String> result=new ArrayList<String>();
-			for (String imple:implementList)
-			{
-				String[] temp =imple.split(":");
-				if (temp[0].equals(class_name))
-				{
-					result.add(imple);
-				}
-			}
-			return result;
-		}
 	
-		public ArrayList<String> buildExtendsRelation(ArrayList<String> extendsList,String class_name, String allCompartment)
+	
+		public ArrayList<String> buildExtendsRelation(ArrayList<String> extendsList,ArrayList<ClassRelations>allResources)
 		{
-			ArrayList<String> extendRelation =findExtends(extendsList,class_name);
+	
 			ArrayList<String> result = new ArrayList<String>();
-			for (String extend:extendRelation)
+			for (String extend:extendsList)
 			{	
 				String[]temp =extend.split(":");
-				String parent = temp[1];
-				parent+="^-";
-				parent+=allCompartment;
-				result.add(parent);
+				String child = trimBracket(temp[1]);
+				child = findInallResources(allResources,child);
+				String parent = temp[0];
+				parent = findInallResources(allResources,parent);
+				String ret =child+"^-"+parent;
+				result.add(ret);
 			}
 			return result;
 		}
-	
-	
-	
+		
+
 		public ArrayList<String> findExtends(ArrayList<String>extendsList, String class_name)
 		{
 			ArrayList<String> result=new ArrayList<String>();
@@ -321,35 +473,63 @@ public class App
 			}
 			return extendRelation;	
 		}
-	
+		public String findInClassNameList(String query,ArrayList<String> classNameList)
+		{
+			for(String name:classNameList)
+			{
+				if (query.equals(name))
+					return query;
+				
+			}
+			return null;
+		}
+		
+		public String findIninterfaceList(String query,ArrayList<String> interfaceList)
+		{
+//			System.out.println("^"+query);
+			for(String name:interfaceList)
+			{
+//				System.out.println("^"+name);
+				String[] temp = name.split(";");
+				String middle = temp[1].replace("]","");
+				if (query.equals(middle)&&temp.length>0)
+					return name;
+			}
+			return null;
+		}
+			
+		
 		public String buildAllCompartment(String class_name, ArrayList<String>fieldprimitiveUML,ArrayList<String>methodUML,
-    					             String constructorUML)
+    					             String constructorUML,ArrayList<String>classNameList,ArrayList<String>interfaceList )
 		{
     	   	String allcompartment = "[";
-    	   	allcompartment+=class_name;
-    	   	
+    	   	if (findInClassNameList(class_name,classNameList)!=null)
+    	   		allcompartment+=class_name;
+    	   	else
+    	   		allcompartment+=trimBracket(findIninterfaceList(class_name,interfaceList));
+    	   			
     		if (fieldprimitiveUML.size()>0 )
     		{
     			allcompartment+='|';
+    				for (int i=0;i<fieldprimitiveUML.size()-1;i++)
+    				{
+    					allcompartment+=fieldprimitiveUML.get(i);
+    					allcompartment+=";";
+    				}
+    				allcompartment+=fieldprimitiveUML.get(fieldprimitiveUML.size()-1);
+    		 }
     		
-    			for (int i=0;i<fieldprimitiveUML.size()-1;i++)
-    			{
-    				allcompartment+=fieldprimitiveUML.get(i);
-    				allcompartment+=";";
-    			}
-    	   		allcompartment+=fieldprimitiveUML.get(fieldprimitiveUML.size()-1);
-    		}
-    		if (methodUML.size()>0)
-    		{
-    	   		allcompartment+='|';
-    	   		allcompartment+=constructorUML+";";
-    	   		for (int i=0;i<methodUML.size()-1;i++)
+    		if (methodUML.size()>0 ||!constructorUML.isEmpty())
+    		{	allcompartment+='|';
+    	   		
+    	   		for (int i=0;i<methodUML.size();i++)
     	   		{
     	   			allcompartment+=methodUML.get(i);
     	   			allcompartment+=";";
     	   		}
-    	   		allcompartment+=methodUML.get(methodUML.size()-1);
-    	   	}
+    	  
+    		    allcompartment+=constructorUML;
+    		}
     	   	allcompartment+="]";
     	   	return allcompartment;
 		}
@@ -389,8 +569,9 @@ public class App
 		}	
 	
 	
-		public String MethodReadin(ArrayList<String>classNameList,String File,
-			ArrayList<String> methodUML,ArrayList<String> methodNonPrimitiveList) throws Exception 			
+		public void MethodReadin(ArrayList<String>classNameList,String File,
+			ArrayList<String> methodUML,ArrayList<String> methodNonPrimitiveList,
+			ArrayList<String> methodbodydependency) throws Exception 			
 		{
 			FileInputStream in = new FileInputStream(File);
 			CompilationUnit cu;
@@ -400,14 +581,14 @@ public class App
 			new MethodVisitor().visit(cu,Method); 
 			Class_Object cls = new Class_Object();
 			new ClassVisitor().visit(cu,cls);
+
 			Method.setClassName(cls.getName());
-	         
+			methodbodydependency.addAll(Method.getmethodBodydependency());
 			methodUML.addAll(Method.getprimitiveUML());
 			ArrayList<String> prononprimitive = Method.getnonprimitiveList();
 			prononprimitive.removeAll(Arrays.asList(null,""));
 			methodNonPrimitiveList.addAll(prononprimitive);
-	    
-			return Method.getClassName();
+		
 		}
 	
 	

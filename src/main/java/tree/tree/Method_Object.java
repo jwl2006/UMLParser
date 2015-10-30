@@ -9,9 +9,7 @@ public class Method_Object {
 	private ArrayList<String> methodParameters = new ArrayList<String>();
 	private ArrayList<String> methodprimitiveUML = new ArrayList<String>();
 	private ArrayList<String> parameterList = new ArrayList<String>();
-	private ArrayList<String> methodPrimitiveList =new ArrayList<String>();
-	private ArrayList<String> methodNonPrimitiveList =new ArrayList<String>();
-	
+	private ArrayList<String> methodBodydependency = new ArrayList<String>();
 	
 	private String className;
 	private String[] primitive = {"byte", "short", "int", "long", "float", "double", "char",
@@ -51,6 +49,20 @@ public class Method_Object {
 	{
 		return methodParameters;
 	}
+	
+	public ArrayList<String> getmethodBodydependency()
+	{
+		return methodBodydependency;
+	}
+	
+	public void setmethodBodydependency(String target)
+	{
+		if (isPrimitive(target)==false)
+			methodBodydependency.add(target);
+	}
+	
+	
+	
 	
 	public boolean collectionCheck(String type)
 	{
@@ -116,6 +128,7 @@ public class Method_Object {
 	    //	System.out.println(parameter);
 	    	parameterList.add(parameter);
 	    	String ret = "";
+	    	
 	    	if (methodModifier.get(i).equals("1"))
 	    	{
 	    		ret+="+";
